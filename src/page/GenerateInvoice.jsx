@@ -25,19 +25,19 @@ function InvoicePage() {
   };
 
   const handleDownloadPDF = async () => {
-    const canvas = await html2canvas(invoiceRef.current);
+    const canvas = await html2canvas(invoiceRef.current, {scale:3});
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF("p", "mm", "a4");
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save("invoice.pdf");
+    pdf.save(`invoice_${clientName}.pdf`);
   };
 
   const handleDownloadImage = async (type = "png") => {
-    const canvas = await html2canvas(invoiceRef.current);
+    const canvas = await html2canvas(invoiceRef.current, {scale:3});
     const link = document.createElement("a");
-    link.download = `invoice.${type}`;
+    link.download = `invoice_${clientName}.${type}`;
     link.href = canvas.toDataURL(`image/${type}`);
     link.click();
   };
