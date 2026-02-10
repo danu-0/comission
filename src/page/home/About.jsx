@@ -1,10 +1,11 @@
-import ScrollAnimation from "./utils/scrollAnimation"
+import ScrollAnimation from "../../utils/scrollAnimation"
+
 function About(){
     return(
         <div id="about" className="flex flex-col h-auto px-10 py-10 bg-white w-full gap-3">
          <ScrollAnimation>
          <p className="montserrat-regular">[About Me]</p>
-         <h1 className="montserrat-medium text-3xl reveal-type leading-snug" data-bg-color='#B6BBC4' data-fg-color='#151515'>Hello everyone, I'm SniperKun, a freelance illustrator, I'm from Indonesia. A self-taught artist, I like drawing Original Fan Art, Anime, and Game Characters, and I also make Character designs.</h1>
+         <h1 className="montserrat-medium text-3xl reveal-type leading-snug" data-bg-color='#B6BBC4' data-fg-color='#151515'>{`Hello everyone, I'm SniperKun, a freelance illustrator, I'm from Indonesia. A self-taught artist, I like drawing Original Fan Art, Anime, and Game Characters, and I also make Character designs.`}</h1>
          <p className="montserrat-regular mt-5">[Term Service]</p>
          <h1 className="montserrat-medium text-3xl reveal-type leading-snug" data-bg-color='#B6BBC4' data-fg-color='#151515'>As a reminder I accept several types of commission orders such as</h1>
          <div className="flex flex-col gap-3 md:flex-row md:gap-16">

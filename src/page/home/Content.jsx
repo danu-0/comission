@@ -1,4 +1,4 @@
-import ContentRow from "./component/ContentRow"
+import ContentRow from "../../component/ContentRow"
 function Content() {
 
   return (

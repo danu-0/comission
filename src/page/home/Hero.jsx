@@ -1,5 +1,5 @@
-import Section1 from "./component/section1"
-import bg from "./assets/background.png"
+import Section1 from "../../component/section1"
+import bg from "../../assets/background.png"
 
 function Hero() {
 

@@ -2,6 +2,9 @@ import { useRef, useState } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Link } from "react-router-dom";
+import { getFeedbackLink } from "../../services/getLink";
+import { FaCopy, FaArrowLeft } from "react-icons/fa";
+import InvoiceLayout from "../../component/invoice/InvoiceLayout";
 
 function InvoicePage() {
   const invoiceRef = useRef();
@@ -13,6 +16,12 @@ function InvoicePage() {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [paymentNumber, setPaymentNumber] = useState("");
   const [payments, setPayments] = useState([{ type: "", price: "" }]);
+  const [link, setLink] = useState(null);
+  const [loadingLink, setLoadingLink] = useState(false);
+  const [isButtonAppear, setIsButtonAppear] = useState(false);
+  const [template, setTemplate] = useState("default");
+
+  const invoiceId = new Date().getTime().toString().slice(-5);
 
   const handleAddPayment = () => {
     setPayments([...payments, { type: "", price: "" }]);
@@ -25,34 +34,63 @@ function InvoicePage() {
   };
 
   const handleDownloadPDF = async () => {
-    const canvas = await html2canvas(invoiceRef.current, {scale:3});
+    const canvas = await html2canvas(invoiceRef.current, { scale: 3 });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF("p", "mm", "a4");
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
     pdf.save(`invoice_${clientName}.pdf`);
+    setIsButtonAppear(true);
   };
 
   const handleDownloadImage = async (type = "png") => {
-    const canvas = await html2canvas(invoiceRef.current, {scale:3});
+    const canvas = await html2canvas(invoiceRef.current, { scale: 3 });
     const link = document.createElement("a");
     link.download = `invoice_${clientName}.${type}`;
     link.href = canvas.toDataURL(`image/${type}`);
     link.click();
+    setIsButtonAppear(true);
   };
+
+  
 
   const totalPrice = payments.reduce(
     (sum, item) => sum + (parseInt(item.price) || 0),
-    0
+    0,
   );
 
+  const handleGenerateLink = async () => {
+    try {
+      setLoadingLink(true);
+      const data = await getFeedbackLink(invoiceId);
+      setLink(data);
+    } catch (err) {
+      alert("Gagal generate feedback link");
+    } finally {
+      setLoadingLink(false);
+      setIsButtonAppear(false);
+    }
+  };
+
+  const invoiceData = {
+  companyName,
+  logoUrl,
+  clientName,
+  clientContact,
+  payments,
+  totalPrice,
+  paymentMethod,
+  paymentNumber,
+  invoiceId,
+  template,
+};
   return (
     <div className="p-8 space-y-6">
-      <Link to="//" className="btn text-2xl">
-        🔙
+      <Link to="/" className="btn text-2xl">
+        <FaArrowLeft />
       </Link>
-      <h2 className="text-2xl font-bold text-center">Invoice Generator</h2>
+      <h2 className="text-2xl font-bold text-center">Form Invoice Generator</h2>
 
       {/* Form Input */}
       <div className="grid gap-4 max-w-2xl mx-auto">
@@ -80,7 +118,7 @@ function InvoicePage() {
               if (file) {
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                  setLogoUrl(reader.result); // base64 image URL
+                  setLogoUrl(reader.result);
                 };
                 reader.readAsDataURL(file);
               }
@@ -142,122 +180,104 @@ function InvoicePage() {
               />
             </div>
           ))}
-          <button
-            className="text-blue-600 hover:underline"
-            onClick={handleAddPayment}
-          >
-            + Add Payment Item
-          </button>
+          <div className="flex w-full justify-between">
+            <button
+              className="text-blue-600 hover:underline"
+              onClick={handleAddPayment}
+            >
+              + Add Payment Item
+            </button>
+            {isButtonAppear ? (
+              <button
+                onClick={handleGenerateLink}
+                disabled={loadingLink}
+                className={`text-blue-600 hover:underline ${
+                  loadingLink
+                    ? "opacity-50 cursor-not-allowed"
+                    : "text-gray-600"
+                }`}
+              >
+                {loadingLink ? "Generating..." : "Generate feedback link"}
+              </button>
+            ) : (
+              ""
+            )}
+          </div>
         </div>
       </div>
       <h2 className="text-2xl font-bold text-center">Sample generate</h2>
-      {/* Invoice Preview */}
-      <div
-        ref={invoiceRef}
-        className="bg-white shadow-md p-8 rounded-md max-w-3xl mx-auto text-sm text-gray-700 font-[Inter] space-y-4 border relative"
+      <div className="max-w-2xl mx-auto">
+  <label className="block font-medium mb-2">Invoice Theme</label>
+
+  <div className="grid grid-cols-3 gap-3">
+    {[
+      { id: "default", name: "Default", desc: "Clean & professional" },
+      { id: "dark", name: "Dark", desc: "Modern & bold" },
+      { id: "minimal", name: "Minimal", desc: "Simple & clean" },
+      { id: "diamond", name: "Formal", desc: "Formal" },
+      { id: "gold", name: "Premium", desc: "premium" },
+    ].map((t) => (
+      <label
+        key={t.id}
+        className={`cursor-pointer rounded-lg border p-3 text-sm transition
+          ${
+            template === t.id
+              ? "border-blue-600 bg-blue-50 ring-2 ring-blue-500"
+              : "border-gray-200 hover:border-gray-400"
+          }
+        `}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b pb-4">
-          <div>
-            <h2 className="text-2xl font-bold">
-              {companyName || "Company Name"}
-            </h2>
-            <p className="text-sm text-gray-500">Commission Invoice</p>
-          </div>
-          {logoUrl && (
-            <img src={logoUrl} alt="Logo" className="h-16 object-contain" />
-          )}
-        </div>
+        <input
+          type="radio"
+          name="invoice-theme"
+          value={t.id}
+          checked={template === t.id}
+          onChange={(e) => setTemplate(e.target.value)}
+          className="hidden"
+        />
 
-        {/* Info */}
-        <div className="flex justify-between mt-4 text-sm">
-          <div>
-            <p>
-              <span className="font-semibold">Invoice No:</span> INV-
-              {new Date().getTime().toString().slice(-5)}
-            </p>
-            <p>
-              <span className="font-semibold">Date:</span>{" "}
-              {new Date().toLocaleDateString()}
-            </p>
-          </div>
-          <div>
-            <p>
-              <span className="font-semibold">Client:</span>{" "}
-              {clientName || "______________"}
-            </p>
-            <p>
-              <span className="font-semibold">Contact:</span>{" "}
-              {clientContact || "______________"}
-            </p>
-          </div>
-        </div>
+        <div className="font-semibold">{t.name}</div>
+        <div className="text-xs text-gray-500">{t.desc}</div>
+      </label>
+    ))}
+  </div>
+</div>
 
-        {/* Message */}
-        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 my-4 rounded-md">
-          ⚠️ Order saat ini sedang dalam kondisi <strong>dijeda</strong> sampai
-          pihak klien melunasi pembayaran yang sudah ditetapkan pihak pemberi
-          jasa ({companyName || "Company Name"}).
-        </div>
+      {/* Invoice Preview */}
+      <InvoiceLayout
+        ref={invoiceRef}
+        data={invoiceData}
+      />
 
-        {/* Payment Table */}
-        <table className="w-full mt-6 border-t border-gray-200 text-sm">
-          <thead className="bg-blue-100 text-blue-900">
-            <tr>
-              <th className="py-2 px-3 border-b text-left">#</th>
-              <th className="py-2 px-3 border-b text-left">Payment Type</th>
-              <th className="py-2 px-3 border-b text-right">Price (Rp)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {payments.map((item, i) => (
-              <tr key={i} className="border-b">
-                <td className="px-3 py-2">{i + 1}</td>
-                <td className="px-3 py-2">{item.type || "-"}</td>
-                <td className="px-3 py-2 text-right">
-                  {item.price ? parseInt(item.price).toLocaleString() : "0"}
-                </td>
-              </tr>
-            ))}
-            <tr className="font-bold bg-blue-200 text-blue-900">
-              <td colSpan="2" className="px-3 py-3 text-right">
-                Total
-              </td>
-              <td className="px-3 py-3 text-right">
-                Rp {totalPrice.toLocaleString()}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        {/* Payment Method Info */}
-        <div className="mt-6">
-          <h4 className="font-semibold mb-2">💳 Payment Information</h4>
-          <table className="w-full border text-sm">
-            <tbody>
-              <tr className="border-b">
-                <td className="p-2 font-medium bg-gray-100 w-1/3">Method</td>
-                <td className="p-2">{paymentMethod || "-"}</td>
-              </tr>
-              <tr>
-                <td className="p-2 font-medium bg-gray-100">
-                  Payment Number / Account
-                </td>
-                <td className="p-2">{paymentNumber || "-"}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* Footer */}
-        <div className="pt-6 border-t text-center text-sm text-gray-500">
-          <p>Terima kasih atas kepercayaan Anda kepada ({companyName})</p>
-          <p>
-            Silakan lakukan pembayaran Anda melalui rincian yang diberikan di
-            atas.
+      {link && (
+        <div className="max-w-2xl mx-auto mt-4 p-4 border rounded bg-gray-400-800">
+          <p className="font-medium text-yellow-700 mb-2">
+            Feedback link berhasil dibuat
           </p>
+
+          <div className="flex flex-col gap-2">
+            <a
+              href={link.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline break-all"
+            >
+              {link.link}
+            </a>
+
+            <button
+              className="ml-2 text-sm text-yellow-800 hover:underline flex justify-end items-center gap-2"
+              onClick={() => {
+                navigator.clipboard.writeText(link.link);
+                alert("Link copied!");
+              }}
+            >
+              <FaCopy />
+              Copy
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Action Buttons */}
       <div className="flex justify-center gap-4">

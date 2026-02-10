@@ -10,7 +10,6 @@ function Feature() {
 
     return (
         <section className="relative w-full h-auto px-4 py-20  overflow-hidden">
-           <p className="montserrat-regular mb-8">[Gallery]</p>
             <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10 pointer-events-none"></div>
 
             <div className="max-w-4xl mx-auto px-6 text-custom-secondary text-center space-y-6">

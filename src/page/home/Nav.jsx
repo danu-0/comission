@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
 import { motion, AnimatePresence } from "framer-motion";
-import './style/index.css'
+import '../../style/index.css'
 
 const menuItems = [
   { text: "Home", href: "#home" },

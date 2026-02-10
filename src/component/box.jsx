@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import ScrollAnimation from "../utils/scrollAnimation";
+import PropTypes from "prop-types"
+
+
 
 function BoxComponent({ title, content, image, bgColor, fgColor }) {
   const [isClicked, setIsClicked] = useState(false);
@@ -31,7 +34,7 @@ function BoxComponent({ title, content, image, bgColor, fgColor }) {
             <img
               src={image}
               alt={title}
-              className="h-full max-h-64 w-auto object-contain px-10 bg-cover bg-center "
+              className="h-full max-h-64 w-auto object-contain px-10"
               style={{ backgroundImage: `url(${image})` }}
             />
           </div>
@@ -39,6 +42,14 @@ function BoxComponent({ title, content, image, bgColor, fgColor }) {
       )}
     </div>
   );
+}
+
+BoxComponent.propTypes={
+  title:PropTypes.string,
+  content:PropTypes.string,
+  image:PropTypes.string,
+  bgColor:PropTypes.string,
+  fgColor:PropTypes.string
 }
 
 export default BoxComponent;

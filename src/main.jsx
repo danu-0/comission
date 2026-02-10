@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Nav from './Nav';
-import Hero from './Hero';
-import Content from './Content';
-import Footer from './Footer';
-import About from './About';
-import Order from './Order';
+import Nav from './page/home/Nav'
+import Hero from './page/home/Hero';
+import Content from './page/home/Content';
+import Footer from './page/home/Footer';
+import About from './page/home/About';
+import Order from './page/order/Order';
 import Splash from './Splash';
 import './style/index.css';
-import Gallery from './Galery';
-import Feature from './Feature';
-import InvoicePage from './page/GenerateInvoice';
+import Gallery from './page/home/Galery';
+import Feature from './page/home/Feature';
+import InvoicePage from './page/invoice/GenerateInvoice';
+import FeedbackPage from './page/feedback/FeedbackPage';
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -29,7 +30,7 @@ const App = () => {
   }
 
   return (
-    <Router basename='/vite-react-comission'>
+    <Router basename='/'>
       <Routes>
         <Route
           path="/"
@@ -45,6 +46,7 @@ const App = () => {
         />
         <Route path="order" element={<Order />} />
         <Route path="generate-invoice" element={<InvoicePage/>} />
+        <Route path="feedback" element={<FeedbackPage />} />
       </Routes>
     </Router>
   );
